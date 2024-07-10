@@ -13,6 +13,7 @@
  */
 package net.logstash.logback.composite.loggingevent;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -148,4 +149,12 @@ public class MdcJsonProviderTest {
         verify(generator).writeObject("value3");
     }
 
+	@Test
+	public void convertValue() {
+        assertEquals(1L, MdcJsonProvider.convertValue("1"));
+        assertEquals(1.1D, MdcJsonProvider.convertValue("1.1"));
+        assertEquals(true, MdcJsonProvider.convertValue("true"));
+        assertEquals(false, MdcJsonProvider.convertValue("false"));
+        assertEquals("value1", MdcJsonProvider.convertValue("value1"));
+	}
 }

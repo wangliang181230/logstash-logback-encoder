@@ -101,7 +101,9 @@ public class MdcJsonProvider extends AbstractFieldJsonProvider<ILoggingEvent> im
                         hasWrittenStart = true;
                     }
                     generator.writeFieldName(fieldName);
-                    generator.writeObject(entry.getValue());
+
+                    // 根据类型转换类型后再写入
+                    generator.writeObject(convertValue(entry.getValue()));
                 }
             }
             if (hasWrittenStart) {
@@ -152,5 +154,26 @@ public class MdcJsonProvider extends AbstractFieldJsonProvider<ILoggingEvent> im
         }
         mdcKeyFieldNames.put(split[0], split[1]);
     }
-    
+
+
+    static Object convertValue(String value) {
+        try {
+            // 解析数字
+            if (value.matches("^\\d+(\\.\\d+)?$")) {
+                if (value.contains(".")) {
+                    return Double.parseDouble(value);
+                } else {
+                    return Long.parseLong(value);
+                }
+            }
+
+            // 解析布尔型
+            if (value.matches("^(true|false)$")) {
+                return Boolean.parseBoolean(value);
+            }
+        } catch (Throwable ignore) {
+        }
+
+        return value;
+    }
 }
