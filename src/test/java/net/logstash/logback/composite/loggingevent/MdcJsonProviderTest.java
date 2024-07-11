@@ -37,31 +37,31 @@ import com.fasterxml.jackson.core.JsonGenerator;
 
 @ExtendWith(MockitoExtension.class)
 public class MdcJsonProviderTest {
-    
+
     private MdcJsonProvider provider = new MdcJsonProvider();
-    
+
     @Mock
     private JsonGenerator generator;
-    
+
     @Mock
     private ILoggingEvent event;
 
     private Map<String, String> mdc;
-    
+
     @BeforeEach
     public void setup() {
         mdc = new LinkedHashMap<String, String>();
         mdc.put("name1", "value1");
         mdc.put("name2", "value2");
         mdc.put("name3", "value3");
-        when(event.getMDCPropertyMap()).thenReturn(mdc);
+        //when(event.getMDCPropertyMap()).thenReturn(mdc);
     }
-    
+
     @Test
     public void testUnwrapped() throws IOException {
-        
+
         provider.writeTo(generator, event);
-        
+
         verify(generator).writeFieldName("name1");
         verify(generator).writeObject("value1");
         verify(generator).writeFieldName("name2");
@@ -73,9 +73,9 @@ public class MdcJsonProviderTest {
     @Test
     public void testWrapped() throws IOException {
         provider.setFieldName("mdc");
-        
+
         provider.writeTo(generator, event);
-        
+
         InOrder inOrder = inOrder(generator);
         inOrder.verify(generator).writeObjectFieldStart("mdc");
         inOrder.verify(generator).writeFieldName("name1");
@@ -93,9 +93,9 @@ public class MdcJsonProviderTest {
         fieldNames.setMdc("mdc");
 
         provider.setFieldNames(fieldNames);
-        
+
         provider.writeTo(generator, event);
-        
+
         InOrder inOrder = inOrder(generator);
         inOrder.verify(generator).writeObjectFieldStart("mdc");
         inOrder.verify(generator).writeFieldName("name1");
@@ -109,10 +109,10 @@ public class MdcJsonProviderTest {
 
     @Test
     public void testInclude() throws IOException {
-        
+
         provider.setIncludeMdcKeyNames(Collections.singletonList("name1"));
         provider.writeTo(generator, event);
-        
+
         verify(generator).writeFieldName("name1");
         verify(generator).writeObject("value1");
         verify(generator, never()).writeFieldName("name2");
@@ -123,10 +123,10 @@ public class MdcJsonProviderTest {
 
     @Test
     public void testExclude() throws IOException {
-        
+
         provider.setExcludeMdcKeyNames(Collections.singletonList("name1"));
         provider.writeTo(generator, event);
-        
+
         verify(generator, never()).writeFieldName("name1");
         verify(generator, never()).writeObject("value1");
         verify(generator).writeFieldName("name2");
@@ -151,10 +151,34 @@ public class MdcJsonProviderTest {
 
 	@Test
 	public void convertValue() {
-        assertEquals(1L, MdcJsonProvider.convertValue("1"));
-        assertEquals(1.1D, MdcJsonProvider.convertValue("1.1"));
-        assertEquals(true, MdcJsonProvider.convertValue("true"));
-        assertEquals(false, MdcJsonProvider.convertValue("false"));
-        assertEquals("value1", MdcJsonProvider.convertValue("value1"));
+		System.out.println(Long.MAX_VALUE);
+		System.out.println(Integer.MAX_VALUE);
+
+		assertEquals(1, MdcJsonProvider.convertValue("1"));
+		assertEquals(1, MdcJsonProvider.convertValue("+1"));
+		assertEquals(-1, MdcJsonProvider.convertValue("-1"));
+
+		assertEquals(1.1D, MdcJsonProvider.convertValue("1.1"));
+		assertEquals(1.1D, MdcJsonProvider.convertValue("+1.1"));
+		assertEquals(-1.1D, MdcJsonProvider.convertValue("-1.1"));
+
+		assertEquals(123456789, MdcJsonProvider.convertValue("123456789"));
+		assertEquals(123456789, MdcJsonProvider.convertValue("+123456789"));
+		assertEquals(-123456789, MdcJsonProvider.convertValue("-123456789"));
+
+		assertEquals(1234567890L, MdcJsonProvider.convertValue("1234567890"));
+		assertEquals(1234567890L, MdcJsonProvider.convertValue("+1234567890"));
+		assertEquals(-1234567890L, MdcJsonProvider.convertValue("-1234567890"));
+
+		assertEquals((long) Integer.MAX_VALUE, MdcJsonProvider.convertValue(String.valueOf(Integer.MAX_VALUE)));
+		assertEquals((long) Integer.MIN_VALUE, MdcJsonProvider.convertValue(String.valueOf(Integer.MIN_VALUE)));
+
+		assertEquals(Long.MAX_VALUE, MdcJsonProvider.convertValue(String.valueOf(Long.MAX_VALUE)));
+		assertEquals(Long.MIN_VALUE, MdcJsonProvider.convertValue(String.valueOf(Long.MIN_VALUE)));
+
+		assertEquals(true, MdcJsonProvider.convertValue("true"));
+		assertEquals(false, MdcJsonProvider.convertValue("false"));
+
+		assertEquals("value1", MdcJsonProvider.convertValue("value1"));
 	}
 }

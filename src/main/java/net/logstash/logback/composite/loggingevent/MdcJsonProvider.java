@@ -102,8 +102,9 @@ public class MdcJsonProvider extends AbstractFieldJsonProvider<ILoggingEvent> im
                     }
                     generator.writeFieldName(fieldName);
 
-                    // 根据类型转换类型后再写入
-                    generator.writeObject(convertValue(entry.getValue()));
+                    // 转换类型后再写入
+                    Object value = convertValue(entry.getValue());
+                    generator.writeObject(value);
                 }
             }
             if (hasWrittenStart) {
@@ -157,23 +158,67 @@ public class MdcJsonProvider extends AbstractFieldJsonProvider<ILoggingEvent> im
 
 
     static Object convertValue(String value) {
+        if (value.isEmpty()) {
+            return value;
+        }
+
         try {
             // 解析数字
-            if (value.matches("^\\d+(\\.\\d+)?$")) {
-                if (value.contains(".")) {
+            int numberType = isNumber(value);
+            if (numberType != 0) {
+                if (numberType == 2) {
                     return Double.parseDouble(value);
-                } else {
+                } else if (value.length() <= 9 + (value.charAt(0) == '-' || value.charAt(0) == '+' ? 1 : 0)) { // 避免溢出，少一位
+                    return Integer.parseInt(value);
+                } else if (value.length() <= 19 + (value.charAt(0) == '-' || value.charAt(0) == '+' ? 1 : 0)) {
                     return Long.parseLong(value);
+                } else {
+                    return value;
                 }
             }
 
             // 解析布尔型
-            if (value.matches("^(true|false)$")) {
-                return Boolean.parseBoolean(value);
+            if ("true".equalsIgnoreCase(value)) {
+                return Boolean.TRUE;
+            }
+            if ("false".equalsIgnoreCase(value)) {
+                return Boolean.FALSE;
             }
         } catch (Throwable ignore) {
         }
 
         return value;
+    }
+
+
+    static int isNumber(String value) {
+        int firstChar = value.charAt(0);
+
+        int start = 0;
+        if (firstChar == '-' || firstChar == '+') {
+            if (value.length() == 1) {
+                return 0;
+            }
+            start = 1;
+        }
+
+        boolean hasOneDot = false;
+        for (int i = start; i < value.length(); i++) {
+            char c = value.charAt(i);
+
+            if (c == '.') {
+                if (hasOneDot) {
+                    return 0; // 数字最多只有一个点
+                }
+                hasOneDot = true;
+                continue;
+            }
+
+            if (!Character.isDigit(c)) {
+                return 0;
+            }
+        }
+
+        return hasOneDot ? 2 : 1; // 2=浮点型 1=整数型
     }
 }
