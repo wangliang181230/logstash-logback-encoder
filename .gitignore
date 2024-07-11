@@ -5,10 +5,9 @@
 
 dependency-reduced-pom.xml
 
+META-INF/
 target/
-target-eclipse/
 
 .idea
 *.iml
 test.log
-/.checkstyle

@@ -1,7 +1,3 @@
-See [contributors](https://github.com/logfellow/logstash-logback-encoder/graphs/contributors) for the most up-to-date list.
-
-The list below is no longer being maintained, but is kept for historical purposes.
-
 * Sajan Alexander (sajanalexander)
 * Dmitry Andrianov (dimas)
 * Simon Barbey (spydesk)
