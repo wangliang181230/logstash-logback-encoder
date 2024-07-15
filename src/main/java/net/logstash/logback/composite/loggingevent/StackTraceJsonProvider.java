@@ -29,6 +29,8 @@ import net.logstash.logback.fieldnames.LogstashFieldNames;
 public class StackTraceJsonProvider extends AbstractFieldJsonProvider<ILoggingEvent> implements FieldNamesAware<LogstashFieldNames> {
 
     public static final String FIELD_STACK_TRACE = "stack_trace";
+    public static final String FIELD_CAUSE = "cause";
+    public static final String FIELD_CAUSE_MESSAGE = "causeMsg";
 
     /**
      * Used to format throwables as Strings.
@@ -61,8 +63,30 @@ public class StackTraceJsonProvider extends AbstractFieldJsonProvider<ILoggingEv
     public void writeTo(JsonGenerator generator, ILoggingEvent event) throws IOException {
         IThrowableProxy throwableProxy = event.getThrowableProxy();
         if (throwableProxy != null) {
+			// 记录堆栈
             JsonWritingUtils.writeStringField(generator, getFieldName(), throwableConverter.convert(event));
+
+			// 记录cause类型名称（递归）
+            writeCauseTo(generator, throwableProxy, 1);
         }
+    }
+
+    public void writeCauseTo(JsonGenerator generator, IThrowableProxy cause, int depth) throws IOException {
+        if (cause == null) {
+            return;
+        }
+
+        // 记录异常类型名称
+        if (cause.getClassName() != null && !cause.getClassName().isEmpty()) {
+            JsonWritingUtils.writeStringField(generator, FIELD_CAUSE + depth, cause.getClassName());
+        }
+        // 记录异常信息
+        if (cause.getMessage() != null && !cause.getMessage().isEmpty()) {
+            JsonWritingUtils.writeStringField(generator, FIELD_CAUSE_MESSAGE + depth, cause.getMessage());
+        }
+
+        // 递归
+        writeCauseTo(generator, cause.getCause(), depth + 1);
     }
     
     @Override
