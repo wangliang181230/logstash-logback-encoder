@@ -28,6 +28,7 @@ import net.logstash.logback.fieldnames.LogstashFieldNames;
 
 public class StackTraceJsonProvider extends AbstractFieldJsonProvider<ILoggingEvent> implements FieldNamesAware<LogstashFieldNames> {
 
+    public static final String FIELD_MESSAGE_FORMAT = "messageFormat";
     public static final String FIELD_STACK_TRACE = "stack_trace";
     public static final String FIELD_CAUSE = "cause";
     public static final String FIELD_CAUSE_MESSAGE = "causeMsg";
@@ -68,6 +69,13 @@ public class StackTraceJsonProvider extends AbstractFieldJsonProvider<ILoggingEv
 
 			// 记录cause类型名称（递归）
             writeCauseTo(generator, throwableProxy, 1);
+        }
+
+        // 记录 message format，方便筛选日志。
+        String messageFormat = event.getMessage();
+        if (messageFormat != null && messageFormat.contains("{}")) {
+            // 记录堆栈
+            JsonWritingUtils.writeStringField(generator, FIELD_MESSAGE_FORMAT, messageFormat);
         }
     }
 
