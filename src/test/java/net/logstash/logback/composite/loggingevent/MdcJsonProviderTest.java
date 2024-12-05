@@ -17,7 +17,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -150,35 +149,32 @@ public class MdcJsonProviderTest {
     }
 
 	@Test
-	public void convertValue() {
+	public void tryConvertToNumber() {
 		System.out.println(Long.MAX_VALUE);
 		System.out.println(Integer.MAX_VALUE);
 
-		assertEquals(1, MdcJsonProvider.convertValue("1"));
-		assertEquals(1, MdcJsonProvider.convertValue("+1"));
-		assertEquals(-1, MdcJsonProvider.convertValue("-1"));
+		assertEquals(1, MdcJsonProvider.tryConvertToNumber("1"));
+		assertEquals(1, MdcJsonProvider.tryConvertToNumber("+1"));
+		assertEquals(-1, MdcJsonProvider.tryConvertToNumber("-1"));
 
-		assertEquals(1.1D, MdcJsonProvider.convertValue("1.1"));
-		assertEquals(1.1D, MdcJsonProvider.convertValue("+1.1"));
-		assertEquals(-1.1D, MdcJsonProvider.convertValue("-1.1"));
+		assertEquals(1.1D, MdcJsonProvider.tryConvertToNumber("1.1"));
+		assertEquals(1.1D, MdcJsonProvider.tryConvertToNumber("+1.1"));
+		assertEquals(-1.1D, MdcJsonProvider.tryConvertToNumber("-1.1"));
 
-		assertEquals(123456789, MdcJsonProvider.convertValue("123456789"));
-		assertEquals(123456789, MdcJsonProvider.convertValue("+123456789"));
-		assertEquals(-123456789, MdcJsonProvider.convertValue("-123456789"));
+		assertEquals(123456789, MdcJsonProvider.tryConvertToNumber("123456789"));
+		assertEquals(123456789, MdcJsonProvider.tryConvertToNumber("+123456789"));
+		assertEquals(-123456789, MdcJsonProvider.tryConvertToNumber("-123456789"));
 
-		assertEquals(1234567890L, MdcJsonProvider.convertValue("1234567890"));
-		assertEquals(1234567890L, MdcJsonProvider.convertValue("+1234567890"));
-		assertEquals(-1234567890L, MdcJsonProvider.convertValue("-1234567890"));
+		assertEquals(1234567890L, MdcJsonProvider.tryConvertToNumber("1234567890"));
+		assertEquals(1234567890L, MdcJsonProvider.tryConvertToNumber("+1234567890"));
+		assertEquals(-1234567890L, MdcJsonProvider.tryConvertToNumber("-1234567890"));
 
-		assertEquals((long) Integer.MAX_VALUE, MdcJsonProvider.convertValue(String.valueOf(Integer.MAX_VALUE)));
-		assertEquals((long) Integer.MIN_VALUE, MdcJsonProvider.convertValue(String.valueOf(Integer.MIN_VALUE)));
+		assertEquals((long) Integer.MAX_VALUE, MdcJsonProvider.tryConvertToNumber(String.valueOf(Integer.MAX_VALUE)));
+		assertEquals((long) Integer.MIN_VALUE, MdcJsonProvider.tryConvertToNumber(String.valueOf(Integer.MIN_VALUE)));
 
-		assertEquals(Long.MAX_VALUE, MdcJsonProvider.convertValue(String.valueOf(Long.MAX_VALUE)));
-		assertEquals(Long.MIN_VALUE, MdcJsonProvider.convertValue(String.valueOf(Long.MIN_VALUE)));
+		assertEquals(Long.MAX_VALUE, MdcJsonProvider.tryConvertToNumber(String.valueOf(Long.MAX_VALUE)));
+		assertEquals(Long.MIN_VALUE, MdcJsonProvider.tryConvertToNumber(String.valueOf(Long.MIN_VALUE)));
 
-		assertEquals(true, MdcJsonProvider.convertValue("true"));
-		assertEquals(false, MdcJsonProvider.convertValue("false"));
-
-		assertEquals("value1", MdcJsonProvider.convertValue("value1"));
+		assertEquals("value1", MdcJsonProvider.tryConvertToNumber("value1"));
 	}
 }

@@ -102,8 +102,15 @@ public class MdcJsonProvider extends AbstractFieldJsonProvider<ILoggingEvent> im
                     }
                     generator.writeFieldName(fieldName);
 
-                    // 转换类型后再写入
-                    Object value = convertValue(entry.getValue());
+                    // 蕙康公司框架专用判断，只对 cost-* 和 resultMsgLength* 格式的字段进行转换
+                    Object value;
+                    if ("cost".equalsIgnoreCase(fieldName) || fieldName.startsWith("cost-") || fieldName.startsWith("resultMsgLength")) {
+                        // 尝试转换类型
+                        value = tryConvertToNumber(entry.getValue());
+                    } else {
+                        value = entry.getValue();
+                    }
+
                     generator.writeObject(value);
                 }
             }
@@ -157,7 +164,7 @@ public class MdcJsonProvider extends AbstractFieldJsonProvider<ILoggingEvent> im
     }
 
 
-    static Object convertValue(String value) {
+    static Object tryConvertToNumber(String value) {
         if (value.isEmpty()) {
             return value;
         }
@@ -175,14 +182,6 @@ public class MdcJsonProvider extends AbstractFieldJsonProvider<ILoggingEvent> im
                 } else {
                     return value;
                 }
-            }
-
-            // 解析布尔型
-            if ("true".equalsIgnoreCase(value)) {
-                return Boolean.TRUE;
-            }
-            if ("false".equalsIgnoreCase(value)) {
-                return Boolean.FALSE;
             }
         } catch (Throwable ignore) {
         }
